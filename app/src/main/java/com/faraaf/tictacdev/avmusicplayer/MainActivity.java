@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -14,13 +15,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -79,7 +78,11 @@ public class MainActivity extends AppCompatActivity implements
     boolean repeat = false;
     boolean shuffle = false;
 
-
+    //service
+    private MusicService musicSrv;
+    private Intent playIntent;
+    //binding
+    private boolean musicBound = false;
 
     private Runnable mUpdateTimeTask = new Runnable() {
         public void run() {
@@ -156,8 +159,8 @@ public class MainActivity extends AppCompatActivity implements
                 } else if (shuffle) {
                     // shuffle
                     Random random = new Random();
-                   currentSongIndex = random.nextInt((mSongList.size()-1)+1);
-              //      currentSongIndex = random.nextInt(mSongList.size());
+                    currentSongIndex = random.nextInt((mSongList.size() - 1) + 1);
+                    //      currentSongIndex = random.nextInt(mSongList.size());
                     playSong(mSongList.get(currentSongIndex));
 
                 } else {
