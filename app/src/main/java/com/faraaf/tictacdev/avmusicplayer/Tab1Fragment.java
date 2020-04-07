@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -14,27 +13,30 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.tabs.TabLayout;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,10 +44,18 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
-public class MainActivity extends AppCompatActivity implements
+
+public class Tab1Fragment extends Fragment implements
         SongAdapter.SongAdapterListener,
+        SongAdapter.AddToPlayListListener,
         View.OnClickListener, MediaPlayer.OnCompletionListener,
         AudioManager.OnAudioFocusChangeListener, SeekBar.OnSeekBarChangeListener {
+
+
+    Tab2Fragment tab2Fragment;
+    private TabLayout tabhost;
+    Bundle bundle;
+    Song song1;
 
     private static Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
     private List<Song> mSongList = new ArrayList<>();
@@ -74,15 +84,9 @@ public class MainActivity extends AppCompatActivity implements
     private AudioManager mAudioManager;
 
     // repeat
-    int count = 0; // initialise outside listener to prevent looping
     boolean repeat = false;
     boolean shuffle = false;
 
-/*    //service
-    private MusicService musicSrv;
-    private Intent playIntent;
-    //binding
-    private boolean musicBound = false;*/
 
     private Runnable mUpdateTimeTask = new Runnable() {
         public void run() {
@@ -98,16 +102,34 @@ public class MainActivity extends AppCompatActivity implements
     };
 
 
+    public Tab1Fragment() {
+    }
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        init();
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_one, container, false);
+        tabhost = view.findViewById(R.id.tabLayout);
+
+        mMediaPlayer = new MediaPlayer();
+        timeUtil = new TimeUtil();
+        mRecyclerViewSongs = view.findViewById(R.id.recycler_view);
+        mCoordinatorLayout = view.findViewById(R.id.coordinator_layout);
+        mMediaLayout = view.findViewById(R.id.layout_media);
+        mIvArtwork = view.findViewById(R.id.iv_artwork);
+        mIvPlay = view.findViewById(R.id.iv_play);
+        mIvPrevious = view.findViewById(R.id.iv_previous);
+        mIvNext = view.findViewById(R.id.iv_next);
+        mTvTitle = view.findViewById(R.id.tv_title);
+        mTvCurrentDuration = view.findViewById(R.id.songCurrentDurationLabel);
+        mTvTotalDuration = view.findViewById(R.id.songTotalDurationLabel);
+        songProgressBar = view.findViewById(R.id.songProgressBar);
+        img_shuffle = view.findViewById(R.id.img_shuffle);
+        img_repeat = view.findViewById(R.id.img_repeat);
+
         setUpAdapter();
         setUpListeners();
         getPermission();
         checkIncomingCalls();
-
         img_repeat.setAlpha(.5f);
         img_shuffle.setAlpha(.5f);
 
@@ -177,42 +199,40 @@ public class MainActivity extends AppCompatActivity implements
         });
 
 
-        //  img_repeat.setAlpha(.5f);
-      /*  img_repeat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    img_repeat.setAlpha(1f);
-
-                  *//*  mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                        @Override
-                        public void onCompletion(MediaPlayer mediaPlayer) {
-                            count++;
-                            mMediaPlayer.seekTo(0);
-                            mMediaPlayer.start();
-                        }
-                    });*//*
-
-                } else {
-                    img_repeat.setAlpha(.5f);
-
-                }
-            }
-        });*/
-
+        return view;
     }
 
-
     private void checkIncomingCalls() {
-        mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        mAudioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
         if (mAudioManager != null) {
             mAudioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
         }
 
     }
 
+    private void setUpAdapter() {
+        mAdapter = new SongAdapter(getActivity(), mSongList, this, this);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerViewSongs.setLayoutManager(mLayoutManager);
+        mRecyclerViewSongs.setItemAnimator(new DefaultItemAnimator());
+
+        // add divider
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerViewSongs.getContext(), DividerItemDecoration.VERTICAL);
+        mRecyclerViewSongs.addItemDecoration(dividerItemDecoration);
+
+        mRecyclerViewSongs.setAdapter(mAdapter);
+    }
+
+    private void setUpListeners() {
+        mIvPlay.setOnClickListener(this);
+        mIvPrevious.setOnClickListener(this);
+        mIvNext.setOnClickListener(this);
+        songProgressBar.setOnSeekBarChangeListener(this);
+        mMediaPlayer.setOnCompletionListener(this);
+    }
 
     void getPermission() {
-        Dexter.withActivity(this)
+        Dexter.withActivity(getActivity())
                 .withPermissions(Manifest.permission.READ_PHONE_STATE,
                         Manifest.permission.READ_EXTERNAL_STORAGE)
                 .withListener(new MultiplePermissionsListener() {
@@ -221,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements
                         if (report.areAllPermissionsGranted()) {
                             getSongList();
                         } else
-                            Toast.makeText(MainActivity.this, "Sorry! You denied the permission", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), "Sorry! You denied the permission", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
@@ -231,51 +251,9 @@ public class MainActivity extends AppCompatActivity implements
                 }).check();
     }
 
-
-    private void init() {
-        mMediaPlayer = new MediaPlayer();
-        timeUtil = new TimeUtil();
-        mRecyclerViewSongs = findViewById(R.id.recycler_view);
-        mCoordinatorLayout = findViewById(R.id.coordinator_layout);
-        mMediaLayout = findViewById(R.id.layout_media);
-        mIvArtwork = findViewById(R.id.iv_artwork);
-        mIvPlay = findViewById(R.id.iv_play);
-        mIvPrevious = findViewById(R.id.iv_previous);
-        mIvNext = findViewById(R.id.iv_next);
-        mTvTitle = findViewById(R.id.tv_title);
-        mTvCurrentDuration = findViewById(R.id.songCurrentDurationLabel);
-        mTvTotalDuration = findViewById(R.id.songTotalDurationLabel);
-        songProgressBar = findViewById(R.id.songProgressBar);
-
-
-        img_shuffle = findViewById(R.id.img_shuffle);
-        img_repeat = findViewById(R.id.img_repeat);
-
-
-    }
-
-
-    private void setUpAdapter() {
-        mAdapter = new SongAdapter(getApplicationContext(), mSongList, this, (SongAdapter.AddToPlayListListener) this);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
-        mRecyclerViewSongs.setLayoutManager(mLayoutManager);
-        mRecyclerViewSongs.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerViewSongs.setAdapter(mAdapter);
-    }
-
-    private void setUpListeners() {
-        //       ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
-        //  new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(mRecyclerViewSongs);
-        mIvPlay.setOnClickListener(this);
-        mIvPrevious.setOnClickListener(this);
-        mIvNext.setOnClickListener(this);
-        songProgressBar.setOnSeekBarChangeListener(this);
-        mMediaPlayer.setOnCompletionListener(this);
-    }
-
     public void getSongList() {
         //retrieve item_song info
-        ContentResolver musicResolver = getContentResolver();
+        ContentResolver musicResolver = getActivity().getContentResolver();
         Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
         if (musicCursor != null && musicCursor.moveToFirst()) {
@@ -309,25 +287,31 @@ public class MainActivity extends AppCompatActivity implements
         mAdapter.notifyDataSetChanged();
     }
 
-
-    public boolean deleteMusic(final File file) {
-        final String where = MediaStore.MediaColumns.DATA + "=?";
-        final String[] selectionArgs = new String[]{file.getAbsolutePath()};
-        final ContentResolver contentResolver = MainActivity.this.getContentResolver();
-        final Uri filesUri = MediaStore.Files.getContentUri("external");
-        contentResolver.delete(filesUri, where, selectionArgs);
-        if (file.exists()) {
-            contentResolver.delete(filesUri, where, selectionArgs);
-        }
-        return !file.exists();
-    }
-
-
     @Override
     public void onSongSelected(Song song) {
         playSong(song);
         currentSongIndex = mSongList.indexOf(song);
     }
+
+    @Override
+    public void onAddToPlayListClicked(Song song) {
+        Toast.makeText(getActivity(), song.getTitle(), Toast.LENGTH_SHORT).show();
+        this.song1 = song;
+        tab2Fragment = new Tab2Fragment();
+        bundle = new Bundle();
+        bundle.putSerializable("song", song1);
+        tab2Fragment.setArguments(bundle);
+        if (getActivity().getFragmentManager() != null) {
+            getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.frame2, tab2Fragment).commit();
+        }
+    }
+
+
+    private void addItem(Song item) {
+        mSongList.add(item);
+        mAdapter.notifyDataSetChanged();
+    }
+
 
     @Override
     public void onClick(View v) {
@@ -369,7 +353,7 @@ public class MainActivity extends AppCompatActivity implements
 
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
-            mMediaPlayer.setDataSource(getApplicationContext(), Uri.parse(song.getSongLink()));
+            mMediaPlayer.setDataSource(getActivity(), Uri.parse(song.getSongLink()));
             mMediaPlayer.prepare();
             mMediaPlayer.start();
             // Displaying Song title
@@ -377,7 +361,7 @@ public class MainActivity extends AppCompatActivity implements
             mIvPlay.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause));
             mMediaLayout.setVisibility(View.VISIBLE);
             mTvTitle.setText(song.getTitle());
-            Glide.with(this).load(song.getThumbnail()).placeholder(R.drawable.play).error(R.drawable.play).crossFade().centerCrop().into(mIvArtwork);
+            Glide.with(getActivity()).load(song.getThumbnail()).placeholder(R.drawable.play).error(R.drawable.play).crossFade().centerCrop().into(mIvArtwork);
             // set Progress bar values
             songProgressBar.setProgress(0);
             songProgressBar.setMax(100);
@@ -432,7 +416,6 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-
     // auto go to the next song
     @Override
     public void onCompletion(MediaPlayer mp) {
@@ -477,6 +460,7 @@ public class MainActivity extends AppCompatActivity implements
             mMediaPlayer.pause();
 
     }
+
 
 
 }

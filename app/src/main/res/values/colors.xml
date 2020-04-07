@@ -6,4 +6,11 @@
     <color name="bg_row_background">#D50000</color>
     <color name="item_name">#535353</color>
     <color name="description">#a9a9a9</color>
+
+
+
+    <color name="c1">#E2BC24</color>
+    <color name="c3">#1E88E5</color>
+    <color name="c4">#D81B60</color>
+    <color name="c5">#FFFFFF</color>
 </resources>
