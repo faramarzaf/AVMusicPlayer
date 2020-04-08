@@ -3,6 +3,7 @@ package com.faraaf.tictacdev.avmusicplayer;
 import android.Manifest;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -86,6 +87,8 @@ public class Tab1Fragment extends Fragment implements
     // repeat
     boolean repeat = false;
     boolean shuffle = false;
+
+
 
 
     private Runnable mUpdateTimeTask = new Runnable() {
@@ -234,6 +237,7 @@ public class Tab1Fragment extends Fragment implements
     void getPermission() {
         Dexter.withActivity(getActivity())
                 .withPermissions(Manifest.permission.READ_PHONE_STATE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
                         Manifest.permission.READ_EXTERNAL_STORAGE)
                 .withListener(new MultiplePermissionsListener() {
                     @Override
@@ -304,8 +308,32 @@ public class Tab1Fragment extends Fragment implements
         if (getActivity().getFragmentManager() != null) {
             getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.frame2, tab2Fragment).commit();
         }
+
+
+        createPlaylist(getActivity(), song1.getTitle());
+
     }
 
+    public static final long createPlaylist(final Context context, final String name) {
+        if (name != null && name.length() > 0) {
+            final ContentResolver resolver = context.getContentResolver();
+            final String[] projection = new String[]{MediaStore.Audio.PlaylistsColumns.NAME};
+            final String selection = MediaStore.Audio.PlaylistsColumns.NAME + " = '" + name + "'";
+            Cursor cursor = resolver.query(MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, projection, selection, null, null);
+            if (cursor.getCount() <= 0) {
+                final ContentValues values = new ContentValues(1);
+                values.put(MediaStore.Audio.PlaylistsColumns.NAME, name);
+                final Uri uri = resolver.insert(MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, values);
+                return Long.parseLong(uri.getLastPathSegment());
+            }
+            if (cursor != null) {
+                cursor.close();
+                cursor = null;
+            }
+            return -1;
+        }
+        return -1;
+    }
 
     private void addItem(Song item) {
         mSongList.add(item);
@@ -460,7 +488,6 @@ public class Tab1Fragment extends Fragment implements
             mMediaPlayer.pause();
 
     }
-
 
 
 }

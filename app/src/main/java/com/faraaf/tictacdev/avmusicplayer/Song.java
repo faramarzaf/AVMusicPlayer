@@ -1,13 +1,22 @@
 package com.faraaf.tictacdev.avmusicplayer;
 
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 import java.io.Serializable;
 
+@Entity(tableName = "songs_table")
 public class Song implements Serializable {
 
+    @PrimaryKey(autoGenerate = true)
     private long id;
+
     private String title;
+
     private String artist;
+
     private String thumbnail;
+
     private String songLink;
 
     public Song() {
@@ -21,7 +30,7 @@ public class Song implements Serializable {
         songLink = link;
     }
 
-    public long getID() {
+    public long getId() {
         return id;
     }
 
@@ -42,4 +51,23 @@ public class Song implements Serializable {
     }
 
 
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setArtist(String artist) {
+        this.artist = artist;
+    }
+
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
+    }
+
+    public void setSongLink(String songLink) {
+        this.songLink = songLink;
+    }
 }

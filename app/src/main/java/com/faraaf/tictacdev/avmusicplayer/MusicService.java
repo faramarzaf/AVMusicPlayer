@@ -98,7 +98,7 @@ public class MusicService extends Service implements
         //get title
         songTitle=playSong.getTitle();
         //get id
-        long currSong = playSong.getID();
+        long currSong = playSong.getId();
         //set uri
         Uri trackUri = ContentUris.withAppendedId(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 currSong);
