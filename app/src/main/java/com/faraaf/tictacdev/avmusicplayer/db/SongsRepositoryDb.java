@@ -31,8 +31,8 @@ public class SongsRepositoryDb {
         return mSongsDao.getAllSongs();
     }
 
-    public void addSongsToFavourites(Song movie) {
-        new insertFavouriteSong(mSongsDao).execute(movie);
+    public void addSongsToFavourites(Song song) {
+        new insertFavouriteSong(mSongsDao).execute(song);
     }
 
     public boolean checkIfSongIsInFavourites(Song song) {
@@ -107,8 +107,8 @@ public class SongsRepositoryDb {
         }
 
         @Override
-        protected Boolean doInBackground(Song... movies) {
-            if (mAsyncTaskDao.getSongById(movies[0].getId()) != null) {
+        protected Boolean doInBackground(Song... songs) {
+            if (mAsyncTaskDao.getSongById(songs[0].getId()) != null) {
                 return true;
             }
             return false;

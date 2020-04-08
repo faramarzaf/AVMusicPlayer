@@ -13,7 +13,7 @@
         android:layout_alignParentBottom="true"
         android:background="@color/colorPrimary"
         android:orientation="vertical"
-        android:visibility="visible">
+        android:visibility="gone">
 
         <!-- Progress Bar/Seek bar -->
         <SeekBar

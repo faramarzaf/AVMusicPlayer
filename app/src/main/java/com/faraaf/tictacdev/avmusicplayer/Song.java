@@ -30,6 +30,17 @@ public class Song implements Serializable {
         songLink = link;
     }
 
+    public Song(long songID, String songTitle, String songArtist , String link) {
+        id = songID;
+        title = songTitle;
+        artist = songArtist;
+        songLink = link;
+    }
+    public Song(long songID, String songTitle ) {
+        id = songID;
+        title = songTitle;
+
+    }
     public long getId() {
         return id;
     }

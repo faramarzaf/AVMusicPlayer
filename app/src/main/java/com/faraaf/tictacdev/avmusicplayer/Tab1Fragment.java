@@ -9,11 +9,14 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.media.AudioManager;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +34,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.faraaf.tictacdev.avmusicplayer.db.SongsDao;
+import com.faraaf.tictacdev.avmusicplayer.db.SongsRepositoryDb;
+import com.faraaf.tictacdev.avmusicplayer.db.SongsRoomDatabase;
 import com.google.android.material.tabs.TabLayout;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
@@ -73,6 +79,7 @@ public class Tab1Fragment extends Fragment implements
 
     private ImageView img_repeat;
     private ImageView img_shuffle;
+    private ImageView img_fav;
 
     private SeekBar songProgressBar;
     private MediaPlayer mMediaPlayer;
@@ -87,9 +94,6 @@ public class Tab1Fragment extends Fragment implements
     // repeat
     boolean repeat = false;
     boolean shuffle = false;
-
-
-
 
     private Runnable mUpdateTimeTask = new Runnable() {
         public void run() {
@@ -113,6 +117,11 @@ public class Tab1Fragment extends Fragment implements
         View view = inflater.inflate(R.layout.fragment_one, container, false);
         tabhost = view.findViewById(R.id.tabLayout);
 
+        // init db
+
+
+
+
         mMediaPlayer = new MediaPlayer();
         timeUtil = new TimeUtil();
         mRecyclerViewSongs = view.findViewById(R.id.recycler_view);
@@ -128,6 +137,7 @@ public class Tab1Fragment extends Fragment implements
         songProgressBar = view.findViewById(R.id.songProgressBar);
         img_shuffle = view.findViewById(R.id.img_shuffle);
         img_repeat = view.findViewById(R.id.img_repeat);
+        img_fav = view.findViewById(R.id.img_fav);
 
         setUpAdapter();
         setUpListeners();
@@ -135,6 +145,7 @@ public class Tab1Fragment extends Fragment implements
         checkIncomingCalls();
         img_repeat.setAlpha(.5f);
         img_shuffle.setAlpha(.5f);
+
 
         img_repeat.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -244,6 +255,7 @@ public class Tab1Fragment extends Fragment implements
                     public void onPermissionsChecked(MultiplePermissionsReport report) {
                         if (report.areAllPermissionsGranted()) {
                             getSongList();
+
                         } else
                             Toast.makeText(getActivity(), "Sorry! You denied the permission", Toast.LENGTH_SHORT).show();
                     }
@@ -258,6 +270,9 @@ public class Tab1Fragment extends Fragment implements
     public void getSongList() {
         //retrieve item_song info
         ContentResolver musicResolver = getActivity().getContentResolver();
+
+
+
         Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
         if (musicCursor != null && musicCursor.moveToFirst()) {
@@ -291,9 +306,10 @@ public class Tab1Fragment extends Fragment implements
         mAdapter.notifyDataSetChanged();
     }
 
+
     @Override
     public void onSongSelected(Song song) {
-        playSong(song);
+          playSong(song);
         currentSongIndex = mSongList.indexOf(song);
     }
 
