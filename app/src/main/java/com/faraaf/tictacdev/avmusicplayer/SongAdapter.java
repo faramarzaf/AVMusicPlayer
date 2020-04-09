@@ -2,28 +2,36 @@ package com.faraaf.tictacdev.avmusicplayer;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class SongAdapter extends RecyclerView.Adapter<SongAdapter.MyViewHolder>   {
+public class SongAdapter extends RecyclerView.Adapter<SongAdapter.MyViewHolder> {
 
     private List<Song> mSongList;
     private List<Song> mSongListFiltered;
     private Context mContext;
+    private Context popUpMenuContext;
     private SongAdapterListener listener;
+    private AddToPlayListListener addToPlayListListener;
 
+    public SongAdapter(Context context, List<Song> songList, SongAdapterListener listener, AddToPlayListListener addToPlayListListener) {
+        this.mContext = context;
+        this.listener = listener;
+        this.addToPlayListListener = addToPlayListListener;
+        this.mSongList = songList;
+        this.mSongListFiltered = songList;
+    }
 
     public SongAdapter(Context context, List<Song> songList, SongAdapterListener listener) {
         this.mContext = context;
@@ -35,6 +43,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.MyViewHolder> 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_song, parent, false);
+        popUpMenuContext = parent.getContext();
         return new MyViewHolder(itemView);
     }
 
@@ -66,22 +75,24 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.MyViewHolder> 
     }
 
 
-
     public interface SongAdapterListener {
         void onSongSelected(Song song);
     }
 
+    public interface AddToPlayListListener {
+        void onAddToPlayListClicked(Song song);
+    }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView title, artist;
-        public RelativeLayout viewBackground, viewForeground;
-        public ImageView thumbnail;
+        public LinearLayout viewForeground;
+        public ImageView thumbnail, icAddToPlayList;
 
         public MyViewHolder(View view) {
             super(view);
             title = view.findViewById(R.id.song_title);
             artist = view.findViewById(R.id.song_artist);
-            viewBackground = view.findViewById(R.id.view_background);
+            icAddToPlayList = view.findViewById(R.id.icAddToPlayList);
             viewForeground = view.findViewById(R.id.view_foreground);
             thumbnail = view.findViewById(R.id.thumbnail);
             view.setOnClickListener(new View.OnClickListener() {
@@ -92,7 +103,22 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.MyViewHolder> 
 
                 }
             });
+
+            icAddToPlayList.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    PopupMenu popup = new PopupMenu(popUpMenuContext, icAddToPlayList);
+                    popup.getMenuInflater().inflate(R.menu.poupup_menu, popup.getMenu());
+                    popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                        public boolean onMenuItemClick(MenuItem item) {
+                            addToPlayListListener.onAddToPlayListClicked(mSongListFiltered.get(getAdapterPosition()));
+                            return true;
+                        }
+                    });
+                    popup.show();
+                }
+            });
         }
     }
-
 }
+

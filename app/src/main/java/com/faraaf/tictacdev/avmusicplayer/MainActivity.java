@@ -45,7 +45,7 @@ import java.util.Random;
 public class MainActivity extends AppCompatActivity implements
         SongAdapter.SongAdapterListener,
         View.OnClickListener, MediaPlayer.OnCompletionListener,
-        AudioManager.OnAudioFocusChangeListener, SeekBar.OnSeekBarChangeListener {
+        AudioManager.OnAudioFocusChangeListener, SeekBar.OnSeekBarChangeListener, SongAdapter.AddToPlayListListener {
 
     private static Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
     private List<Song> mSongList = new ArrayList<>();
@@ -256,7 +256,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
     private void setUpAdapter() {
-        mAdapter = new SongAdapter(getApplicationContext(), mSongList, this);
+        mAdapter = new SongAdapter(getApplicationContext(), mSongList, this , this);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         mRecyclerViewSongs.setLayoutManager(mLayoutManager);
         mRecyclerViewSongs.setItemAnimator(new DefaultItemAnimator());
@@ -479,4 +479,8 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
+    @Override
+    public void onAddToPlayListClicked(Song song) {
+
+    }
 }
