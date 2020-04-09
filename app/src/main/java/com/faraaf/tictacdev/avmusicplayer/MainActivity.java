@@ -14,6 +14,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -28,6 +31,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.gson.Gson;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -84,6 +88,12 @@ public class MainActivity extends AppCompatActivity implements
     //binding
     private boolean musicBound = false;
 
+
+    Song song1;
+    Bundle bundle;
+    Context context;
+    Intent intent;
+
     private Runnable mUpdateTimeTask = new Runnable() {
         public void run() {
             if (mMediaPlayer == null) return;
@@ -102,6 +112,8 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        context = this.getApplicationContext();
+
         init();
         setUpAdapter();
         setUpListeners();
@@ -256,7 +268,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
     private void setUpAdapter() {
-        mAdapter = new SongAdapter(getApplicationContext(), mSongList, this , this);
+        mAdapter = new SongAdapter(getApplicationContext(), mSongList, this, this);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         mRecyclerViewSongs.setLayoutManager(mLayoutManager);
         mRecyclerViewSongs.setItemAnimator(new DefaultItemAnimator());
@@ -475,12 +487,36 @@ public class MainActivity extends AppCompatActivity implements
          */
         if (mMediaPlayer.isPlaying())
             mMediaPlayer.pause();
-
     }
 
 
     @Override
     public void onAddToPlayListClicked(Song song) {
-
+        this.song1 = song;
+        intent = new Intent(this, FavoriteActivity.class);
+        Gson gson = new Gson();
+        String myJson = gson.toJson(song1);
+        intent.putExtra("song", myJson);
+        startActivity(intent);
     }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater findMenuItems = getMenuInflater();
+        findMenuItems.inflate(R.menu.main_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.itemPlayList:
+                Intent aboutIntent = new Intent(MainActivity.this, FavoriteActivity.class);
+                startActivity(aboutIntent);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
 }
