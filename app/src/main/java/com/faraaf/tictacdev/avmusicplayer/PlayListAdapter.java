@@ -39,6 +39,8 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.MyView
         this.mSongListFiltered = songList;
     }
 
+
+
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_playlist, parent, false);
@@ -92,11 +94,11 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.MyView
 
         public MyViewHolder(View view) {
             super(view);
-            title = view.findViewById(R.id.song_title);
-            artist = view.findViewById(R.id.song_artist);
+            title = view.findViewById(R.id.song_title_playlist);
+            artist = view.findViewById(R.id.song_artist_playlist);
 
-            viewForeground = view.findViewById(R.id.view_foreground);
-            thumbnail = view.findViewById(R.id.thumbnail);
+            viewForeground = view.findViewById(R.id.view_foreground_playlist);
+            thumbnail = view.findViewById(R.id.thumbnail_playlist);
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {

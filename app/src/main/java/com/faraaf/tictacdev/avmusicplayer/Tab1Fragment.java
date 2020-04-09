@@ -5,6 +5,7 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -38,6 +39,7 @@ import com.faraaf.tictacdev.avmusicplayer.db.SongsDao;
 import com.faraaf.tictacdev.avmusicplayer.db.SongsRepositoryDb;
 import com.faraaf.tictacdev.avmusicplayer.db.SongsRoomDatabase;
 import com.google.android.material.tabs.TabLayout;
+import com.google.gson.Gson;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -50,6 +52,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
+
+import static android.content.Context.MODE_PRIVATE;
 
 
 public class Tab1Fragment extends Fragment implements
@@ -120,8 +124,6 @@ public class Tab1Fragment extends Fragment implements
         // init db
 
 
-
-
         mMediaPlayer = new MediaPlayer();
         timeUtil = new TimeUtil();
         mRecyclerViewSongs = view.findViewById(R.id.recycler_view);
@@ -184,6 +186,12 @@ public class Tab1Fragment extends Fragment implements
         });
 
 
+
+
+        return view;
+    }
+
+    void initShuffleRepeat() {
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
@@ -205,15 +213,16 @@ public class Tab1Fragment extends Fragment implements
                         playSong(mSongList.get(currentSongIndex + 1));
                         currentSongIndex = currentSongIndex + 1;
                     } else {
-                        playSong(mSongList.get(0));
-                        currentSongIndex = 0;
+                        if (mSongList.size() > 0) {
+                            playSong(mSongList.get(0));
+                            currentSongIndex = 0;
+                        }
                     }
                 }
             }
         });
 
 
-        return view;
     }
 
     private void checkIncomingCalls() {
@@ -255,7 +264,7 @@ public class Tab1Fragment extends Fragment implements
                     public void onPermissionsChecked(MultiplePermissionsReport report) {
                         if (report.areAllPermissionsGranted()) {
                             getSongList();
-
+                            initShuffleRepeat();
                         } else
                             Toast.makeText(getActivity(), "Sorry! You denied the permission", Toast.LENGTH_SHORT).show();
                     }
@@ -270,7 +279,6 @@ public class Tab1Fragment extends Fragment implements
     public void getSongList() {
         //retrieve item_song info
         ContentResolver musicResolver = getActivity().getContentResolver();
-
 
 
         Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
@@ -309,7 +317,7 @@ public class Tab1Fragment extends Fragment implements
 
     @Override
     public void onSongSelected(Song song) {
-          playSong(song);
+        playSong(song);
         currentSongIndex = mSongList.indexOf(song);
     }
 
@@ -326,7 +334,7 @@ public class Tab1Fragment extends Fragment implements
         }
 
 
-        createPlaylist(getActivity(), song1.getTitle());
+        //   createPlaylist(getActivity(), song1.getTitle());
 
     }
 
@@ -463,13 +471,16 @@ public class Tab1Fragment extends Fragment implements
     // auto go to the next song
     @Override
     public void onCompletion(MediaPlayer mp) {
-        if (currentSongIndex < (mSongList.size() - 1)) {
+     /*   if (currentSongIndex < (mSongList.size() - 1)) {
             playSong(mSongList.get(currentSongIndex + 1));
             currentSongIndex = currentSongIndex + 1;
         } else {
-            playSong(mSongList.get(0));
-            currentSongIndex = 0;
-        }
+            if (mSongList.size()>0){
+
+                playSong(mSongList.get(0));
+                currentSongIndex = 0;
+            }
+        }*/
     }
 
     @Override
