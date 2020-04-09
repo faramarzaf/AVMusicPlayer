@@ -1,10 +1,12 @@
 package com.faraaf.tictacdev.avmusicplayer;
 
 import android.Manifest;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -13,7 +15,9 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.provider.MediaStore;
+import android.telecom.ConnectionService;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -44,11 +48,10 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity implements
         SongAdapter.SongAdapterListener,
-        View.OnClickListener, MediaPlayer.OnCompletionListener,
-        AudioManager.OnAudioFocusChangeListener, SeekBar.OnSeekBarChangeListener {
+        View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 
     private static Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
-    private List<Song> mSongList = new ArrayList<>();
+    private ArrayList<Song> mSongList = new ArrayList<>();
     private RecyclerView mRecyclerViewSongs;
     private SongAdapter mAdapter;
     private CoordinatorLayout mCoordinatorLayout;
@@ -78,11 +81,52 @@ public class MainActivity extends AppCompatActivity implements
     boolean repeat = false;
     boolean shuffle = false;
 
-    //service
+/*    //service
     private MusicService musicSrv;
     private Intent playIntent;
     //binding
+    private boolean musicBound = false;*/
+
+    //service
+    private ServiceMusic serviceMusic;
+    private Intent playIntent;
+    //binding
     private boolean musicBound = false;
+
+
+    private ServiceConnection musicConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            ServiceMusic.MusicBinder binder = (ServiceMusic.MusicBinder) service;
+            serviceMusic = binder.getService();
+/*
+          ServiceMusic.MusicBinder binder = (ServiceMusic.MusicBinder) service;
+            MainActivity.this.serviceMusic = binder.getService(); */
+
+
+
+            //pass list
+            serviceMusic.setList(mSongList);
+            musicBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            musicBound = false;
+        }
+    };
+
+    //start and bind the service when the activity starts
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (playIntent == null) {
+            playIntent = new Intent(this, ServiceMusic.class);
+            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
+            startService(playIntent);
+        }
+    }
 
     private Runnable mUpdateTimeTask = new Runnable() {
         public void run() {
@@ -106,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements
         setUpAdapter();
         setUpListeners();
         getPermission();
-        checkIncomingCalls();
+        //    checkIncomingCalls();
 
         img_repeat.setAlpha(.5f);
         img_shuffle.setAlpha(.5f);
@@ -155,22 +199,29 @@ public class MainActivity extends AppCompatActivity implements
 
                  /*   playSong(globalSong);
                     currentSongIndex = mSongList.indexOf(globalSong);*/
-                    playSong(mSongList.get(currentSongIndex));
+                    //playSong(mSongList.get(currentSongIndex));
+                    serviceMusic.playSong(mSongList.get(currentSongIndex));
+                    setui(mSongList.get(currentSongIndex));
                 } else if (shuffle) {
                     // shuffle
                     Random random = new Random();
                     currentSongIndex = random.nextInt((mSongList.size() - 1) + 1);
                     //      currentSongIndex = random.nextInt(mSongList.size());
-                    playSong(mSongList.get(currentSongIndex));
-
+                    //   playSong(mSongList.get(currentSongIndex));
+                    serviceMusic.playSong(mSongList.get(currentSongIndex));
+                    setui(mSongList.get(currentSongIndex));
                 } else {
                     // no repeat no shuffle
                     if (currentSongIndex < (mSongList.size() - 1)) {
-                        playSong(mSongList.get(currentSongIndex + 1));
+                        //    playSong(mSongList.get(currentSongIndex + 1));
+                        serviceMusic.playSong(mSongList.get(currentSongIndex + 1));
                         currentSongIndex = currentSongIndex + 1;
+                        setui(mSongList.get(currentSongIndex + 1));
                     } else {
-                        playSong(mSongList.get(0));
+                        //  playSong(mSongList.get(0));
+                        serviceMusic.playSong(mSongList.get(0));
                         currentSongIndex = 0;
+                        setui(mSongList.get(0));
                     }
                 }
             }
@@ -202,13 +253,13 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-    private void checkIncomingCalls() {
+/*    private void checkIncomingCalls() {
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         if (mAudioManager != null) {
             mAudioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
         }
 
-    }
+    }*/
 
 
     void getPermission() {
@@ -270,7 +321,7 @@ public class MainActivity extends AppCompatActivity implements
         mIvPrevious.setOnClickListener(this);
         mIvNext.setOnClickListener(this);
         songProgressBar.setOnSeekBarChangeListener(this);
-        mMediaPlayer.setOnCompletionListener(this);
+        //    mMediaPlayer.setOnCompletionListener(this);
     }
 
     public void getSongList() {
@@ -325,7 +376,12 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onSongSelected(Song song) {
-        playSong(song);
+  /*      playSong(song);
+        currentSongIndex = mSongList.indexOf(song);
+        */
+
+        serviceMusic.playSong(song);
+        setui(song);
         currentSongIndex = mSongList.indexOf(song);
     }
 
@@ -349,16 +405,18 @@ public class MainActivity extends AppCompatActivity implements
     private void playMusic() {
         if (!mMediaPlayer.isPlaying()) {
             mIvPlay.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause));
-            mMediaPlayer.start();
+            //mMediaPlayer.start();
+            serviceMusic.go();
         } else {
             mIvPlay.setBackground(getResources().getDrawable(android.R.drawable.ic_media_play));
-            mMediaPlayer.pause();
+            //   mMediaPlayer.pause();
+            serviceMusic.pausePlayer();
         }
     }
 
     public void playSong(Song song) {
         try {
-            mMediaPlayer.reset();
+            //      mMediaPlayer.reset();
       /*      @Deprecated
       * use this
       *            mp.setAudioAttributes(new AudioAttributes
@@ -367,11 +425,11 @@ public class MainActivity extends AppCompatActivity implements
                             .build());
             */
 
-            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            //   mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
-            mMediaPlayer.setDataSource(getApplicationContext(), Uri.parse(song.getSongLink()));
-            mMediaPlayer.prepare();
-            mMediaPlayer.start();
+            //      mMediaPlayer.setDataSource(getApplicationContext(), Uri.parse(song.getSongLink()));
+            ///       mMediaPlayer.prepare();
+            ///       mMediaPlayer.start();
             // Displaying Song title
             //      isPlaying = true;
             mIvPlay.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause));
@@ -387,24 +445,46 @@ public class MainActivity extends AppCompatActivity implements
 
             // Updating progress bar
             updateProgressBar();
-        } catch (IllegalArgumentException | IllegalStateException | IOException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             e.printStackTrace();
         }
     }
 
+    void setui(Song song) {
+        try {
+            mIvPlay.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause));
+            mMediaLayout.setVisibility(View.VISIBLE);
+            mTvTitle.setText(song.getTitle());
+            Glide.with(this).load(song.getThumbnail()).placeholder(R.drawable.play).error(R.drawable.play).crossFade().centerCrop().into(mIvArtwork);
+            // set Progress bar values
+            songProgressBar.setProgress(0);
+            songProgressBar.setMax(100);
+
+            songProgressBar.getProgressDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+            songProgressBar.getThumb().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+
+            // Updating progress bar
+            updateProgressBar();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     private void playNextSong() {
-        if (currentSongIndex < (mSongList.size() - 1)) {
+     /*   if (currentSongIndex < (mSongList.size() - 1)) {
             Song song = mSongList.get(currentSongIndex + 1);
             playSong(song);
             currentSongIndex = currentSongIndex + 1;
         } else {
             playSong(mSongList.get(0));
             currentSongIndex = 0;
-        }
+        }*/
+        serviceMusic.playNext();
     }
 
     private void playPreviousSong() {
-        if (currentSongIndex > 0) {
+ /*       if (currentSongIndex > 0) {
             Song song = mSongList.get(currentSongIndex - 1);
             playSong(song);
             currentSongIndex = currentSongIndex - 1;
@@ -412,7 +492,9 @@ public class MainActivity extends AppCompatActivity implements
             Song song = mSongList.get(mSongList.size() - 1);
             playSong(song);
             currentSongIndex = mSongList.size() - 1;
-        }
+        }*/
+        serviceMusic.playPrev();
+
     }
 
 
@@ -420,20 +502,22 @@ public class MainActivity extends AppCompatActivity implements
         mHandler.postDelayed(mUpdateTimeTask, 100);
     }
 
-    @Override
+/*    @Override
     public void onAudioFocusChange(int focusChange) {
         // handling calls
         if (focusChange <= 0) {
             //LOSS -> PAUSE
-            mMediaPlayer.pause();
+            //  mMediaPlayer.pause();
+            serviceMusic.pausePlayer();
         } else {
             //GAIN -> PLAY
-            mMediaPlayer.start();
+            //   mMediaPlayer.start();
+            serviceMusic.go();
         }
-    }
+    }*/
 
 
-    // auto go to the next song
+/*    // auto go to the next song
     @Override
     public void onCompletion(MediaPlayer mp) {
         if (currentSongIndex < (mSongList.size() - 1)) {
@@ -443,7 +527,7 @@ public class MainActivity extends AppCompatActivity implements
             playSong(mSongList.get(0));
             currentSongIndex = 0;
         }
-    }
+    }*/
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -467,14 +551,18 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mAudioManager.abandonAudioFocus(this);
+        //   mAudioManager.abandonAudioFocus(this);
+
+        stopService(playIntent);
+        serviceMusic = null;
+
         /**AudioManager.abandonAudioFocus(this);
          * Added in API level 8
          * Deprecated in API level 26
          * use abandonAudioFocusRequest(android.media.AudioFocusRequest)
          */
-        if (mMediaPlayer.isPlaying())
-            mMediaPlayer.pause();
+      /*  if (mMediaPlayer.isPlaying())
+            mMediaPlayer.pause();*/
 
     }
 
