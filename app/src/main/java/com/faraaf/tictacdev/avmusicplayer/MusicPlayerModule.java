@@ -6,14 +6,12 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.AttributeSet;
@@ -25,7 +23,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.RequiresApi;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -50,7 +47,6 @@ public class MusicPlayerModule extends RelativeLayout implements
         View.OnClickListener, MediaPlayer.OnCompletionListener,
         AudioManager.OnAudioFocusChangeListener,
         SeekBar.OnSeekBarChangeListener {
-
 
     private View rootView;
     private CoordinatorLayout coordinatorLayout;
@@ -78,9 +74,7 @@ public class MusicPlayerModule extends RelativeLayout implements
     boolean repeat = false;
     boolean shuffle = false;
     private MediaPlayer mMediaPlayer;
-
     private Context globalContext;
-
 
     private Runnable mUpdateTimeTask = new Runnable() {
         public void run() {
@@ -102,8 +96,8 @@ public class MusicPlayerModule extends RelativeLayout implements
         init(context);
     }
 
-    public MusicPlayerModule(Context context ) {
-        super(context );
+    public MusicPlayerModule(Context context) {
+        super(context);
         this.globalContext = context;
         init(context);
     }
@@ -111,7 +105,6 @@ public class MusicPlayerModule extends RelativeLayout implements
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-
         setUpAdapter();
         setUpListeners();
         getPermission();
@@ -124,7 +117,6 @@ public class MusicPlayerModule extends RelativeLayout implements
         img_repeat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 if (repeat) {
                     repeat = false;
                     img_repeat.setAlpha(.5f);
@@ -142,11 +134,8 @@ public class MusicPlayerModule extends RelativeLayout implements
             @Override
             public void onClick(View v) {
                 if (shuffle) {
-
                     shuffle = false;
-
                     img_shuffle.setAlpha(.5f);
-
 
                 } else {
                     shuffle = true;
@@ -185,88 +174,8 @@ public class MusicPlayerModule extends RelativeLayout implements
                 }
             }
         });
-
-
     }
 
-    /* public MusicPlayerModule(Context context) {
-        super(context);
-        init(context);
-        this.globalContext = context;
-        setUpAdapter();
-        setUpListeners();
-        getPermission();
-        checkIncomingCalls();
-
-        img_repeat.setAlpha(.5f);
-        img_shuffle.setAlpha(.5f);
-
-
-        img_repeat.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if (repeat) {
-                    repeat = false;
-                    img_repeat.setAlpha(.5f);
-                } else {
-                    repeat = true;
-                    img_repeat.setAlpha(1f);
-                    shuffle = false;
-                    img_shuffle.setAlpha(.5f);
-                }
-
-            }
-        });
-
-        img_shuffle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (shuffle) {
-
-                    shuffle = false;
-
-                    img_shuffle.setAlpha(.5f);
-
-
-                } else {
-                    shuffle = true;
-                    img_shuffle.setAlpha(1f);
-                    repeat = false;
-                    img_repeat.setAlpha(.5f);
-                }
-            }
-        });
-
-
-        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                if (repeat) {
-
-                 *//*   playSong(globalSong);
-                    currentSongIndex = mSongList.indexOf(globalSong);*//*
-                    playSong(mSongList.get(currentSongIndex));
-                } else if (shuffle) {
-                    // shuffle
-                    Random random = new Random();
-                    currentSongIndex = random.nextInt((mSongList.size() - 1) + 1);
-                    //      currentSongIndex = random.nextInt(mSongList.size());
-                    playSong(mSongList.get(currentSongIndex));
-
-                } else {
-                    // no repeat no shuffle
-                    if (currentSongIndex < (mSongList.size() - 1)) {
-                        playSong(mSongList.get(currentSongIndex + 1));
-                        currentSongIndex = currentSongIndex + 1;
-                    } else {
-                        playSong(mSongList.get(0));
-                        currentSongIndex = 0;
-                    }
-                }
-            }
-        });
-    }*/
 
     private void checkIncomingCalls() {
         mAudioManager = (AudioManager) globalContext.getSystemService(Context.AUDIO_SERVICE);
@@ -305,8 +214,6 @@ public class MusicPlayerModule extends RelativeLayout implements
     }
 
     private void setUpListeners() {
-        //       ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
-        //  new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(mRecyclerViewSongs);
         iv_play.setOnClickListener(this);
         iv_previous.setOnClickListener(this);
         iv_next.setOnClickListener(this);
@@ -395,13 +302,10 @@ public class MusicPlayerModule extends RelativeLayout implements
             */
 
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-
             mMediaPlayer.setDataSource(globalContext.getApplicationContext(), Uri.parse(song.getSongLink()));
             mMediaPlayer.prepare();
             mMediaPlayer.start();
-            // Displaying Song title
-            //      isPlaying = true;
-            iv_play.setBackground(getResources().getDrawable(  R.drawable.ic_media_pause));
+            iv_play.setBackground(getResources().getDrawable(R.drawable.ic_media_pause));
             layout_media.setVisibility(View.VISIBLE);
             tv_title.setText(song.getTitle());
             Glide.with(globalContext).load(song.getThumbnail()).placeholder(R.drawable.play).error(R.drawable.play).crossFade().centerCrop().into(iv_artwork);
@@ -412,7 +316,6 @@ public class MusicPlayerModule extends RelativeLayout implements
             songProgressBar.getProgressDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
             songProgressBar.getThumb().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
 
-            // Updating progress bar
             updateProgressBar();
         } catch (IllegalArgumentException | IllegalStateException | IOException e) {
             e.printStackTrace();
@@ -479,10 +382,8 @@ public class MusicPlayerModule extends RelativeLayout implements
                 break;
 
             default:
-
         }
     }
-
 
     // auto go to the next song
     @Override
@@ -547,9 +448,4 @@ public class MusicPlayerModule extends RelativeLayout implements
         timeUtil = new TimeUtil();
     }
 
-    private void checkNullSet(AttributeSet set) {
-        if (set == null) {
-            return;
-        }
-    }
 }
