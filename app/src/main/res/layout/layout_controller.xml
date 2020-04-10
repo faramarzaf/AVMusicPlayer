@@ -35,7 +35,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="start"
-                android:textColor="#FFFFFF" />
+                android:textColor="@color/description" />
 
             <!-- Total Duration Label -->
             <TextView
@@ -44,7 +44,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="end"
-                android:textColor="#FFFFFF" />
+                android:textColor="@color/description" />
         </LinearLayout>
 
         <LinearLayout
@@ -69,7 +69,7 @@
                 android:layout_weight="1"
                 android:ellipsize="end"
                 android:textAlignment="center"
-                android:textColor="#FFFFFF" />
+                android:textColor="@color/description" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -85,13 +85,6 @@
 
                     />
 
-                <ImageView
-                    android:id="@+id/img_shuffle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_margin="@dimen/dp_5"
-                    android:src="@drawable/ic_shuffle" />
 
                 <ImageView
                     android:id="@+id/iv_previous"
@@ -99,7 +92,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_margin="@dimen/dp_5"
-                    android:src="@android:drawable/ic_media_previous" />
+                    android:src="@drawable/ic_media_previous" />
 
                 <ImageView
                     android:id="@+id/iv_play"
@@ -114,7 +107,16 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_margin="@dimen/dp_5"
-                    android:src="@android:drawable/ic_media_next" />
+                    android:src="@drawable/ic_media_next" />
+
+                <ImageView
+                    android:id="@+id/img_shuffle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_margin="@dimen/dp_5"
+                    android:src="@drawable/ic_shuffle" />
+
             </LinearLayout>
 
         </LinearLayout>

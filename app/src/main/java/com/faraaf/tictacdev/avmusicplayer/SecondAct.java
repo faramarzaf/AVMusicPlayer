@@ -7,14 +7,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class SecondAct extends AppCompatActivity {
     MusicPlayerModule musicPlayerModule;
-    AttributeSet set;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_second);
         musicPlayerModule = findViewById(R.id.music);
-        musicPlayerModule = new MusicPlayerModule(this, set);
+     //   musicPlayerModule = new MusicPlayerModule(this );
     }
 
 }

@@ -48,25 +48,25 @@ import java.util.Random;
 public class MusicPlayerModule extends RelativeLayout implements
         SongAdapter.SongAdapterListener,
         View.OnClickListener, MediaPlayer.OnCompletionListener,
-        AudioManager.OnAudioFocusChangeListener, SeekBar.OnSeekBarChangeListener {
+        AudioManager.OnAudioFocusChangeListener,
+        SeekBar.OnSeekBarChangeListener {
 
 
     private View rootView;
-    private TypedArray typedArray;
-    CoordinatorLayout coordinatorLayout;
-    RecyclerView recycler_view;
-    LinearLayout layout_media;
-    SeekBar songProgressBar;
-    LinearLayout timerDisplay;
-    TextView songCurrentDurationLabel;
-    TextView songTotalDurationLabel;
-    ImageView iv_artwork;
-    TextView tv_title;
-    ImageView img_repeat;
-    ImageView img_shuffle;
-    ImageView iv_previous;
-    ImageView iv_play;
-    ImageView iv_next;
+    private CoordinatorLayout coordinatorLayout;
+    private RecyclerView recycler_view;
+    private LinearLayout layout_media;
+    private SeekBar songProgressBar;
+    private LinearLayout timerDisplay;
+    private TextView songCurrentDurationLabel;
+    private TextView songTotalDurationLabel;
+    private ImageView iv_artwork;
+    private TextView tv_title;
+    private ImageView img_repeat;
+    private ImageView img_shuffle;
+    private ImageView iv_previous;
+    private ImageView iv_play;
+    private ImageView iv_next;
 
     private static Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
     private List<Song> mSongList = new ArrayList<>();
@@ -79,7 +79,7 @@ public class MusicPlayerModule extends RelativeLayout implements
     boolean shuffle = false;
     private MediaPlayer mMediaPlayer;
 
-    Context globalContext;
+    private Context globalContext;
 
 
     private Runnable mUpdateTimeTask = new Runnable() {
@@ -98,15 +98,27 @@ public class MusicPlayerModule extends RelativeLayout implements
 
     public MusicPlayerModule(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context);
         this.globalContext = context;
+        init(context);
+    }
+
+    public MusicPlayerModule(Context context ) {
+        super(context );
+        this.globalContext = context;
+        init(context);
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+
         setUpAdapter();
         setUpListeners();
         getPermission();
         checkIncomingCalls();
 
-        img_repeat.setAlpha(.5f);
-        img_shuffle.setAlpha(.5f);
+        img_repeat.setAlpha(.4f);
+        img_shuffle.setAlpha(.4f);
 
 
         img_repeat.setOnClickListener(new View.OnClickListener() {
@@ -167,17 +179,17 @@ public class MusicPlayerModule extends RelativeLayout implements
                         playSong(mSongList.get(currentSongIndex + 1));
                         currentSongIndex = currentSongIndex + 1;
                     } else {
-                        if (mSongList.size()>0){
-                            playSong(mSongList.get(0));
-                            currentSongIndex = 0;
-                        }
+                        playSong(mSongList.get(0));
+                        currentSongIndex = 0;
                     }
                 }
             }
         });
+
+
     }
 
-   /* public MusicPlayerModule(Context context) {
+    /* public MusicPlayerModule(Context context) {
         super(context);
         init(context);
         this.globalContext = context;
@@ -363,10 +375,10 @@ public class MusicPlayerModule extends RelativeLayout implements
 
     private void playMusic() {
         if (!mMediaPlayer.isPlaying()) {
-            iv_play.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause));
+            iv_play.setBackground(getResources().getDrawable(R.drawable.ic_media_pause));
             mMediaPlayer.start();
         } else {
-            iv_play.setBackground(getResources().getDrawable(android.R.drawable.ic_media_play));
+            iv_play.setBackground(getResources().getDrawable(R.drawable.ic_media_play));
             mMediaPlayer.pause();
         }
     }
@@ -389,7 +401,7 @@ public class MusicPlayerModule extends RelativeLayout implements
             mMediaPlayer.start();
             // Displaying Song title
             //      isPlaying = true;
-            iv_play.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause));
+            iv_play.setBackground(getResources().getDrawable(  R.drawable.ic_media_pause));
             layout_media.setVisibility(View.VISIBLE);
             tv_title.setText(song.getTitle());
             Glide.with(globalContext).load(song.getThumbnail()).placeholder(R.drawable.play).error(R.drawable.play).crossFade().centerCrop().into(iv_artwork);
@@ -437,13 +449,37 @@ public class MusicPlayerModule extends RelativeLayout implements
 
     @Override
     public void onAudioFocusChange(int focusChange) {
-        // handling calls
-        if (focusChange <= 0) {
-            //LOSS -> PAUSE
-            mMediaPlayer.pause();
-        } else {
-            //GAIN -> PLAY
-            mMediaPlayer.start();
+        switch (focusChange) {
+            case AudioManager.AUDIOFOCUS_GAIN:
+                if (!mMediaPlayer.isPlaying())
+                    mMediaPlayer.start();
+                break;
+
+            case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
+                break;
+
+            case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK:
+                break;
+
+            case AudioManager.AUDIOFOCUS_LOSS:
+                if (mMediaPlayer.isPlaying())
+                    mMediaPlayer.pause();
+                break;
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                if (mMediaPlayer.isPlaying()) {
+                    mMediaPlayer.pause();
+                }
+                break;
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                if (mMediaPlayer.isPlaying()) {
+                    mMediaPlayer.pause();
+                }
+                break;
+            case AudioManager.AUDIOFOCUS_REQUEST_FAILED:
+                break;
+
+            default:
+
         }
     }
 
@@ -477,13 +513,13 @@ public class MusicPlayerModule extends RelativeLayout implements
         mMediaPlayer.seekTo(currentPosition);
         updateProgressBar();
     }
-    
+
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         // View is now detached, and about to be destroyed
-        mAudioManager.abandonAudioFocus(this);
+        //  mAudioManager.abandonAudioFocus(this);
         if (mMediaPlayer.isPlaying())
             mMediaPlayer.pause();
 
