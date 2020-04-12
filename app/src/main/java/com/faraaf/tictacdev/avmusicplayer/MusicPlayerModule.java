@@ -33,6 +33,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.gson.Gson;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -79,6 +80,8 @@ public class MusicPlayerModule extends RelativeLayout implements
     boolean shuffle = false;
     private MediaPlayer mMediaPlayer;
     private Context globalContext;
+    private Intent intent;
+    private Song globalSong;
 
     private Runnable mUpdateTimeTask = new Runnable() {
         public void run() {
@@ -282,6 +285,7 @@ public class MusicPlayerModule extends RelativeLayout implements
     public void onSongSelected(Song song) {
         playSong(song);
         currentSongIndex = mSongList.indexOf(song);
+        this.globalSong = song;
     }
 
     private void playMusic() {
@@ -425,9 +429,9 @@ public class MusicPlayerModule extends RelativeLayout implements
         super.onDetachedFromWindow();
         // View is now detached, and about to be destroyed
         //  mAudioManager.abandonAudioFocus(this);
-        if (mMediaPlayer.isPlaying())
-            mMediaPlayer.pause();
 
+        /*       if (mMediaPlayer.isPlaying())
+            mMediaPlayer.pause();*/
     }
 
     @SuppressLint("ClickableViewAccessibility")
