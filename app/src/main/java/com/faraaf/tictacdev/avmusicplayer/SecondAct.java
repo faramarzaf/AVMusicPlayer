@@ -14,7 +14,7 @@ public class SecondAct extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_second);
         musicPlayerModule = findViewById(R.id.music);
-     //   musicPlayerModule = new MusicPlayerModule(this );
+        musicPlayerModule = new MusicPlayerModule(this);
     }
 
 }
