@@ -3,12 +3,9 @@ package com.faraaf.tictacdev.avmusicplayer;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -16,7 +13,6 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
-import android.os.IBinder;
 import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.view.View;
@@ -114,8 +110,8 @@ public class MusicPlayerModule extends RelativeLayout implements
         getPermission();
         checkIncomingCalls();
 
-        img_repeat.setAlpha(.4f);
-        img_shuffle.setAlpha(.4f);
+        img_repeat.setAlpha(.5f);
+        img_shuffle.setAlpha(.5f);
 
 
         img_repeat.setOnClickListener(new View.OnClickListener() {

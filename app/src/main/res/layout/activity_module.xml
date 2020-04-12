@@ -24,7 +24,10 @@
                 android:id="@+id/recycler_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scrollbars="vertical" />
+                android:scrollbars="vertical"
+                android:paddingBottom="90dp"
+                android:clipToPadding="false"
+                />
 
         </LinearLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
