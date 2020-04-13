@@ -80,10 +80,9 @@ public class Tab1Fragment extends Fragment implements
     private ImageView mIvPlay;
     private ImageView mIvPrevious;
     private ImageView mIvNext;
-
     private ImageView img_repeat;
     private ImageView img_shuffle;
-    private ImageView img_fav;
+
 
     private SeekBar songProgressBar;
     private MediaPlayer mMediaPlayer;
@@ -121,9 +120,6 @@ public class Tab1Fragment extends Fragment implements
         View view = inflater.inflate(R.layout.fragment_one, container, false);
         tabhost = view.findViewById(R.id.tabLayout);
 
-        // init db
-
-
         mMediaPlayer = new MediaPlayer();
         timeUtil = new TimeUtil();
         mRecyclerViewSongs = view.findViewById(R.id.recycler_view);
@@ -139,12 +135,13 @@ public class Tab1Fragment extends Fragment implements
         songProgressBar = view.findViewById(R.id.songProgressBar);
         img_shuffle = view.findViewById(R.id.img_shuffle);
         img_repeat = view.findViewById(R.id.img_repeat);
-        img_fav = view.findViewById(R.id.img_fav);
+
 
         setUpAdapter();
         setUpListeners();
         getPermission();
         checkIncomingCalls();
+
         img_repeat.setAlpha(.5f);
         img_shuffle.setAlpha(.5f);
 
@@ -152,7 +149,6 @@ public class Tab1Fragment extends Fragment implements
         img_repeat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 if (repeat) {
                     repeat = false;
                     img_repeat.setAlpha(.5f);
@@ -170,17 +166,43 @@ public class Tab1Fragment extends Fragment implements
             @Override
             public void onClick(View v) {
                 if (shuffle) {
-
                     shuffle = false;
-
                     img_shuffle.setAlpha(.5f);
-
 
                 } else {
                     shuffle = true;
                     img_shuffle.setAlpha(1f);
                     repeat = false;
                     img_repeat.setAlpha(.5f);
+                }
+            }
+        });
+
+
+        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                if (repeat) {
+
+                 /*   playSong(globalSong);
+                    currentSongIndex = mSongList.indexOf(globalSong);*/
+                    playSong(mSongList.get(currentSongIndex));
+                } else if (shuffle) {
+                    // shuffle
+                    Random random = new Random();
+                    currentSongIndex = random.nextInt((mSongList.size() - 1) + 1);
+                    //      currentSongIndex = random.nextInt(mSongList.size());
+                    playSong(mSongList.get(currentSongIndex));
+
+                } else {
+                    // no repeat no shuffle
+                    if (currentSongIndex < (mSongList.size() - 1)) {
+                        playSong(mSongList.get(currentSongIndex + 1));
+                        currentSongIndex = currentSongIndex + 1;
+                    } else {
+                        playSong(mSongList.get(0));
+                        currentSongIndex = 0;
+                    }
                 }
             }
         });
@@ -264,7 +286,7 @@ public class Tab1Fragment extends Fragment implements
                     public void onPermissionsChecked(MultiplePermissionsReport report) {
                         if (report.areAllPermissionsGranted()) {
                             getSongList();
-                            initShuffleRepeat();
+                       //     initShuffleRepeat();
                         } else
                             Toast.makeText(getActivity(), "Sorry! You denied the permission", Toast.LENGTH_SHORT).show();
                     }
@@ -458,29 +480,49 @@ public class Tab1Fragment extends Fragment implements
 
     @Override
     public void onAudioFocusChange(int focusChange) {
-        // handling calls
-        if (focusChange <= 0) {
-            //LOSS -> PAUSE
-            mMediaPlayer.pause();
-        } else {
-            //GAIN -> PLAY
-            mMediaPlayer.start();
+        switch (focusChange) {
+            case AudioManager.AUDIOFOCUS_GAIN:
+                if (!mMediaPlayer.isPlaying())
+                    mMediaPlayer.start();
+                break;
+
+            case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
+                break;
+
+            case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK:
+                break;
+
+            case AudioManager.AUDIOFOCUS_LOSS:
+                if (mMediaPlayer.isPlaying())
+                    mMediaPlayer.pause();
+                break;
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                if (mMediaPlayer.isPlaying()) {
+                    mMediaPlayer.pause();
+                }
+                break;
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                if (mMediaPlayer.isPlaying()) {
+                    mMediaPlayer.pause();
+                }
+                break;
+            case AudioManager.AUDIOFOCUS_REQUEST_FAILED:
+                break;
+
+            default:
         }
     }
 
     // auto go to the next song
     @Override
     public void onCompletion(MediaPlayer mp) {
-     /*   if (currentSongIndex < (mSongList.size() - 1)) {
+        if (currentSongIndex < (mSongList.size() - 1)) {
             playSong(mSongList.get(currentSongIndex + 1));
             currentSongIndex = currentSongIndex + 1;
         } else {
-            if (mSongList.size()>0){
-
-                playSong(mSongList.get(0));
-                currentSongIndex = 0;
-            }
-        }*/
+            playSong(mSongList.get(0));
+            currentSongIndex = 0;
+        }
     }
 
     @Override

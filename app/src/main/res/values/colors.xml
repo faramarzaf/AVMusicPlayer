@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#D50000</color>
-    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorPrimary">#242424</color>
+    <color name="colorPrimaryDark">#181818</color>
     <color name="colorAccent">#D81B60</color>
+
     <color name="bg_row_background">#D50000</color>
-    <color name="item_name">#535353</color>
-    <color name="description">#a9a9a9</color>
+    <color name="item_name">#383838</color>
+    <color name="description">#B30000</color>
 
 
-
-    <color name="c1">#E2BC24</color>
-    <color name="c3">#1E88E5</color>
+    <color name="c1">#B30000</color>
+    <color name="c2">#F82222</color>
+    <color name="c3">#383838</color>
     <color name="c4">#D81B60</color>
     <color name="c5">#FFFFFF</color>
 </resources>

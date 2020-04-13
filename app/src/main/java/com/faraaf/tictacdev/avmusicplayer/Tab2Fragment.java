@@ -137,7 +137,6 @@ public class Tab2Fragment extends Fragment implements
         img_repeat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 if (repeat) {
                     repeat = false;
                     img_repeat.setAlpha(.5f);
@@ -155,11 +154,8 @@ public class Tab2Fragment extends Fragment implements
             @Override
             public void onClick(View v) {
                 if (shuffle) {
-
                     shuffle = false;
-
                     img_shuffle.setAlpha(.5f);
-
 
                 } else {
                     shuffle = true;
@@ -171,13 +167,13 @@ public class Tab2Fragment extends Fragment implements
         });
 
 
- /*       mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 if (repeat) {
 
-                 *//*   playSong(globalSong);
-                    currentSongIndex = mSongList.indexOf(globalSong);*//*
+                 /*   playSong(globalSong);
+                    currentSongIndex = mSongList.indexOf(globalSong);*/
                     playSong(mSongList.get(currentSongIndex));
                 } else if (shuffle) {
                     // shuffle
@@ -192,14 +188,12 @@ public class Tab2Fragment extends Fragment implements
                         playSong(mSongList.get(currentSongIndex + 1));
                         currentSongIndex = currentSongIndex + 1;
                     } else {
-                        if (mSongList.size() > 0) {
-                            playSong(mSongList.get(0));
-                            currentSongIndex = 0;
-                        }
+                        playSong(mSongList.get(0));
+                        currentSongIndex = 0;
                     }
                 }
             }
-        });*/
+        });
 
 
         return view;
@@ -311,26 +305,18 @@ public class Tab2Fragment extends Fragment implements
     public void playSong(Song song) {
         try {
             mMediaPlayer.reset();
-      /*      @Deprecated
-      * use this
-      *            mp.setAudioAttributes(new AudioAttributes
-                            .Builder()
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                            .build());
-            */
 
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
             mMediaPlayer.setDataSource(context, Uri.parse(song.getSongLink()));
             mMediaPlayer.prepare();
             mMediaPlayer.start();
-            // Displaying Song title
-            //      isPlaying = true;
+
             mIvPlay.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause));
             mMediaLayout.setVisibility(View.VISIBLE);
             mTvTitle.setText(song.getTitle());
             Glide.with(getActivity()).load(song.getThumbnail()).placeholder(R.drawable.play).error(R.drawable.play).crossFade().centerCrop().into(mIvArtwork);
-            // set Progress bar values
+
             songProgressBar.setProgress(0);
             songProgressBar.setMax(100);
 
@@ -374,13 +360,36 @@ public class Tab2Fragment extends Fragment implements
 
     @Override
     public void onAudioFocusChange(int focusChange) {
-        // handling calls
-        if (focusChange <= 0) {
-            //LOSS -> PAUSE
-            mMediaPlayer.pause();
-        } else {
-            //GAIN -> PLAY
-            mMediaPlayer.start();
+        switch (focusChange) {
+            case AudioManager.AUDIOFOCUS_GAIN:
+                if (!mMediaPlayer.isPlaying())
+                    mMediaPlayer.start();
+                break;
+
+            case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
+                break;
+
+            case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK:
+                break;
+
+            case AudioManager.AUDIOFOCUS_LOSS:
+                if (mMediaPlayer.isPlaying())
+                    mMediaPlayer.pause();
+                break;
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                if (mMediaPlayer.isPlaying()) {
+                    mMediaPlayer.pause();
+                }
+                break;
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                if (mMediaPlayer.isPlaying()) {
+                    mMediaPlayer.pause();
+                }
+                break;
+            case AudioManager.AUDIOFOCUS_REQUEST_FAILED:
+                break;
+
+            default:
         }
     }
 
@@ -391,11 +400,8 @@ public class Tab2Fragment extends Fragment implements
             playSong(mSongList.get(currentSongIndex + 1));
             currentSongIndex = currentSongIndex + 1;
         } else {
-            if (mSongList.size()>0){
-
-                playSong(mSongList.get(0));
-                currentSongIndex = 0;
-            }
+            playSong(mSongList.get(0));
+            currentSongIndex = 0;
         }
     }
 
