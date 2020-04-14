@@ -116,67 +116,6 @@ public class MusicPlayerModule extends RelativeLayout implements
         img_repeat.setAlpha(.5f);
         img_shuffle.setAlpha(.5f);
 
-
-        img_repeat.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (repeat) {
-                    repeat = false;
-                    img_repeat.setAlpha(.5f);
-                } else {
-                    repeat = true;
-                    img_repeat.setAlpha(1f);
-                    shuffle = false;
-                    img_shuffle.setAlpha(.5f);
-                }
-
-            }
-        });
-
-        img_shuffle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (shuffle) {
-                    shuffle = false;
-                    img_shuffle.setAlpha(.5f);
-
-                } else {
-                    shuffle = true;
-                    img_shuffle.setAlpha(1f);
-                    repeat = false;
-                    img_repeat.setAlpha(.5f);
-                }
-            }
-        });
-
-
-        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                if (repeat) {
-
-                 /*   playSong(globalSong);
-                    currentSongIndex = mSongList.indexOf(globalSong);*/
-                    playSong(mSongList.get(currentSongIndex));
-                } else if (shuffle) {
-                    // shuffle
-                    Random random = new Random();
-                    currentSongIndex = random.nextInt((mSongList.size() - 1) + 1);
-                    //      currentSongIndex = random.nextInt(mSongList.size());
-                    playSong(mSongList.get(currentSongIndex));
-
-                } else {
-                    // no repeat no shuffle
-                    if (currentSongIndex < (mSongList.size() - 1)) {
-                        playSong(mSongList.get(currentSongIndex + 1));
-                        currentSongIndex = currentSongIndex + 1;
-                    } else {
-                        playSong(mSongList.get(0));
-                        currentSongIndex = 0;
-                    }
-                }
-            }
-        });
     }
 
 
@@ -220,6 +159,9 @@ public class MusicPlayerModule extends RelativeLayout implements
         iv_play.setOnClickListener(this);
         iv_previous.setOnClickListener(this);
         iv_next.setOnClickListener(this);
+        img_repeat.setOnClickListener(this);
+        img_shuffle.setOnClickListener(this);
+
         songProgressBar.setOnSeekBarChangeListener(this);
         mMediaPlayer.setOnCompletionListener(this);
     }
@@ -272,6 +214,31 @@ public class MusicPlayerModule extends RelativeLayout implements
             case R.id.iv_next:
                 playNextSong();
                 break;
+
+            case R.id.img_repeat:
+                if (repeat) {
+                    repeat = false;
+                    img_repeat.setAlpha(.5f);
+                } else {
+                    repeat = true;
+                    img_repeat.setAlpha(1f);
+                    shuffle = false;
+                    img_shuffle.setAlpha(.5f);
+                }
+                break;
+
+            case R.id.img_shuffle:
+                if (shuffle) {
+                    shuffle = false;
+                    img_shuffle.setAlpha(.5f);
+                } else {
+                    shuffle = true;
+                    img_shuffle.setAlpha(1f);
+                    repeat = false;
+                    img_repeat.setAlpha(.5f);
+                }
+                break;
+
             default:
                 break;
         }
@@ -389,15 +356,26 @@ public class MusicPlayerModule extends RelativeLayout implements
         }
     }
 
-    // auto go to the next song
+
     @Override
     public void onCompletion(MediaPlayer mp) {
-        if (currentSongIndex < (mSongList.size() - 1)) {
-            playSong(mSongList.get(currentSongIndex + 1));
-            currentSongIndex = currentSongIndex + 1;
+        if (repeat) {
+            playSong(mSongList.get(currentSongIndex));
+        } else if (shuffle) {
+            Random random = new Random();
+            currentSongIndex = random.nextInt((mSongList.size() - 1) + 1);
+            playSong(mSongList.get(currentSongIndex));
         } else {
-            playSong(mSongList.get(0));
-            currentSongIndex = 0;
+            // no repeat no shuffle
+            if (currentSongIndex < (mSongList.size() - 1)) {
+                playSong(mSongList.get(currentSongIndex + 1));
+                currentSongIndex = currentSongIndex + 1;
+            }
+            // comment below to disable repeat songs after list is over
+            else {
+                playSong(mSongList.get(0));
+                currentSongIndex = 0;
+            }
         }
     }
 
